@@ -1,0 +1,60 @@
+# azure-pipelines.yml
+
+# Azure DevOps CI/CD Pipeline
+
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  environment: 'development'
+  terraformVersion: '1.0.0'
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: TerraformValidate
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: UseTerraform@0
+            inputs:
+              terraformVersion: $(terraformVersion)
+          - script: terraform validate
+            displayName: 'Terraform Validate'
+
+  - stage: Plan
+    dependsOn: Validate
+    jobs:
+      - job: TerraformPlan
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: UseTerraform@0
+            inputs:
+              terraformVersion: $(terraformVersion)
+          - script: terraform plan -out=tfplan
+            displayName: 'Terraform Plan'
+            env:
+              TF_VAR_environment: $(environment)
+          - publish: tfplan
+            artifact: tfplan
+            displayName: 'Publish Plan Artifact'
+
+  - stage: Apply
+    dependsOn: Plan
+    jobs:
+      - job: TerraformApply
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - download: current
+            artifact: tfplan
+          - task: UseTerraform@0
+            inputs:
+              terraformVersion: $(terraformVersion)
+          - script: terraform apply tfplan
+            displayName: 'Terraform Apply'
+            env:
+              TF_VAR_environment: $(environment)
