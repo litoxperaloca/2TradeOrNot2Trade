@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  market_analysis_agent:
+    image: market_analysis_agent_image:latest
+    build:
+      context: ./market_analysis_agent
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./market_analysis_agent:/app
+
+  trading_execution_agent:
+    image: trading_execution_agent_image:latest
+    build:
+      context: ./trading_execution_agent
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./trading_execution_agent:/app
+
+  wallet_management_agent:
+    image: wallet_management_agent_image:latest
+    build:
+      context: ./wallet_management_agent
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./wallet_management_agent:/app
+
+  supporting_service:
+    image: supporting_service_image:latest
+    build:
+      context: ./supporting_service
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./supporting_service:/app
+
+networks:
+  default:
+    driver: bridge
